@@ -188,7 +188,7 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        raise ValueError("Expected exactly one argument. Usage: python script.py <your_city_name>")
+        raise ValueError("Usage: python <this_script.py> <your_city_name>")
     city_name = " ".join(sys.argv[1:])
     print(city_name)
     data = scrape(f"https://www.bbc.com/weather/{get_city_id(city_name)}")
