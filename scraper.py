@@ -14,11 +14,13 @@ from typing import List
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
     if re.search(r'\bsun\w*\b', description) and re.search(r'\bcloud\w*\b', description):
-        return "⛅"
+        return "🌤"
     elif re.search(r'\bcloud\w*\b', description) and re.search(r'\brain\w*\b', description):
-        return "🌦"
-    elif re.search(r'\bthunder\b|\blightning\b', description):
+        return "⛆"
+    elif re.search(r'\bthunder\b|\blightning\b', description) and re.search(r'\brain\b|\bstorm\b', description):
         return "⛈"
+    elif re.search(r'\bthunder\b|\blightning\b', description):
+        return "🌩"
     elif re.search(r'\bsnow\b', description):
         return "❄"
     elif re.search(r'\bmist\b|\bfog\b', description):
@@ -26,9 +28,9 @@ def get_weather_emoji(description: str) -> str:
     elif re.search(r'\bcloud\w*\b', description):
         return '☁'
     elif re.search(r'\brain\b', description) or re.search(r'\bdrizzle\b', description):
-        return '🌧'
+        return '⛆'
     elif re.search(r'\bsleet\b', description):
-        return '🧊'
+        return '❅'
     elif re.search(r'\bsun\w*\b|\bclear\b', description):
         return '☀'
     return "?"
