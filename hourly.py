@@ -1,6 +1,7 @@
 import requests
 import json
 from collections import namedtuple, defaultdict
+from datetime import datetime, timedelta
 
 WeatherReport = namedtuple(
     "WeatherReport",
@@ -16,7 +17,7 @@ WeatherReport = namedtuple(
 )
 
 
-def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/2925533'):
+def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/2925533') -> WeatherReport:
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
@@ -27,10 +28,11 @@ def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/ag
         weather_data = defaultdict(list)
 
         for iday, forecast in enumerate(forecasts):
+            # hourly weather reports
             reports = forecast.get("detailed", {}).get("reports", [])
-            
             for ihour, report in enumerate(reports):
                 try:
+                    # you can fetch more metrics here
                     localDate = report["localDate"]
                     timeslot = report["timeslot"]
                     weatherTypeText = report["weatherTypeText"]
@@ -48,7 +50,6 @@ def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/ag
                         humidity=humidity,
                         windSpeedKph=windSpeedKph
                     )
-
                     weather_data[localDate].append(weather_report)
                 except KeyError:
                     pass
@@ -56,7 +57,7 @@ def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/ag
         print(f"Failed to fetch data. HTTP status code: {response.status_code}")
     return weather_data
 
-def draw_bar(from_, to_, value, bar_width=20):
+def draw_bar(from_, to_, value, bar_width=20) -> str:
     block = '\u2588'
     border = '|'
     value = min(max(from_, value), to_)
@@ -67,33 +68,36 @@ def draw_bar(from_, to_, value, bar_width=20):
     bar = border + block * blocks_to_fill + ' ' * (bar_width - 2 - blocks_to_fill) + border
     return bar
 
-def fmt_weather_data(data, from_, to_):
+def fmt_weather_data(data, from_, to_) -> str:
     hour = data.timeslot
     temp = data.temperatureC
     temp_bar = draw_bar(from_, to_, temp)
     humid = data.humidity
     wspeed = data.windSpeedKph
     text = data.weatherTypeText
-    ret = ' '.join([str(d) for d in [hour, temp_bar, temp, humid, wspeed, text]])
+    ret =  f"{hour} \t {temp_bar} \t {temp} °C \t {humid} % \t {wspeed} kph \t {text}"
+    return ret
+
+def fmt_day_hourly(days_from_now=0) -> str:
+    weather_data = request_hourly()
+
+    target_date = (datetime.now() + timedelta(days=days_from_now)).strftime('%Y-%m-%d')
+    ret = ''
+
+    if target_date in weather_data:
+        temp_min, temp_max = -30, 45
+        for report in weather_data[target_date]:
+            if report.temperatureC > temp_min:
+                temp_min = report.temperatureC
+            if report.temperatureC < temp_max:
+                temp_max = report.temperatureC
+        temp_min, temp_max = temp_max, temp_min
+        for report in weather_data[target_date]:
+            ret += fmt_weather_data(report, temp_min, temp_max) + '\n'
+    else:
+        print(f"No weather data available for {target_date}.")
     return ret
 
 if __name__ == '__main__':
-    from datetime import datetime, timedelta
-    weather_data = request_hourly()
-
     for i in range(14):
-        target_date = (datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d')
-
-        if target_date in weather_data:
-            print(f"Hourly weather data for {target_date}:")
-            temp_min, temp_max = -30, 45
-            for report in weather_data[target_date]:
-                if report.temperatureC > temp_min:
-                    temp_min = report.temperatureC
-                if report.temperatureC < temp_max:
-                    temp_max = report.temperatureC
-            temp_min, temp_max = temp_max, temp_min
-            for report in weather_data[target_date]:
-                print(fmt_weather_data(report, temp_min, temp_max))
-        else:
-            print(f"No weather data available for {target_date}.")
+        print(fmt_day_hourly(i))
