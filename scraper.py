@@ -97,8 +97,7 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         rows.append(row)
 
     for irow, row in enumerate(rows):
-        # TODO: cards per row, not 4
-        card_lines = [create_card(weather, irow*4 + icol).splitlines() for icol ,weather in enumerate(row)]
+        card_lines = [create_card(weather, irow*cards_per_row + icol).splitlines() for icol ,weather in enumerate(row)]
         for line_idx in range(len(card_lines[0])):
             print(" ".join(card[line_idx] for card in card_lines))
         print()  # Add spacing between rows
