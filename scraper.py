@@ -11,6 +11,9 @@ from datetime import datetime, timedelta
 import requests
 from typing import List
 
+# select which weather card is highlighted
+icard=0
+
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
     if re.search(r'\bsun\w*\b', description) and re.search(r'\bcloud\w*\b', description):
@@ -62,20 +65,30 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         truncated = "".join(result)
         return pad_string(truncated, target_width)
 
-    def create_card(weather):
+    def create_card(weather, icard_current):
         """Generate a single card as a string."""
+        #print(icard_current)
         description = weather.descr
         #print(string_display_width(weather.description))
         temp_range = f"{weather.temp_low} to {weather.temp_high} °C".center(card_width - 2)
-
-        card = (
-            f"\u250c{'\u2500' * (card_width - 2)}\u2510\n"  # Top border
-            f"\u2502{weather.date.center(card_width - 2)}\u2502\n"  # Date
-            f"\u2502{description[:card_width-4].center(card_width - 2)}\u2502\n"  # Description
-            f"\u2502{description[card_width-4:].center(card_width - 2)}\u2502\n"  # Description
-            f"\u2502{temp_range}\u2502\n"  # Temp range
-            f"\u2514{'\u2500' * (card_width - 2)}\u2518"  # Bottom border
-        )
+        if icard_current != icard:
+            card = (
+                f"\u250c{'\u2500' * (card_width - 2)}\u2510\n"  # Top border
+                f"\u2502{weather.date.center(card_width - 2)}\u2502\n"  # Date
+                f"\u2502{description[:card_width-4].center(card_width - 2)}\u2502\n"  # Description
+                f"\u2502{description[card_width-4:].center(card_width - 2)}\u2502\n"  # Description
+                f"\u2502{temp_range}\u2502\n"  # Temp range
+                f"\u2514{'\u2500' * (card_width - 2)}\u2518"  # Bottom border
+            )
+        else:
+            card = (
+                f"\u259B{'\u2580' * (card_width - 2)}\u259C\n"  # Top border
+                f"\u258C{weather.date.center(card_width - 2)}\u2590\n"  # Date
+                f"\u258C{description[:card_width-4].center(card_width - 2)}\u2590\n"  # Description
+                f"\u258C{description[card_width-4:].center(card_width - 2)}\u2590\n"  # Description
+                f"\u258C{temp_range}\u2590\n"  # Temp range
+                f"\u2599{'\u2584'   * (card_width - 2)}\u259F"  # Bottom border
+            )
         return card
 
     rows = []
@@ -83,8 +96,9 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         row = weather_data[i:i + cards_per_row]
         rows.append(row)
 
-    for row in rows:
-        card_lines = [create_card(weather).splitlines() for weather in row]
+    for irow, row in enumerate(rows):
+        # TODO: cards per row, not 4
+        card_lines = [create_card(weather, irow*4 + icol).splitlines() for icol ,weather in enumerate(row)]
         for line_idx in range(len(card_lines[0])):
             print(" ".join(card[line_idx] for card in card_lines))
         print()  # Add spacing between rows
@@ -118,11 +132,11 @@ def scrape(url='https://www.bbc.com/weather/2925533', use_emojis=True, verbose=F
     soup = BeautifulSoup(html_content, 'html.parser')
     daily_data = []
     ndays = 14 # that's how much BBC typically forecasts for
-    for day in range(ndays):
+    for day in range(1,ndays):
         day_id = f"daylink-{day}"
         extract_numbers = lambda x: [int(xx) for xx in re.findall(r'\d+', x)]
         try:
-            date = datetime.now() + timedelta(days=day)
+            date = datetime.now() + timedelta(days=day-1)
             descr, temp_low, temp_high = 'N/A', 'N/A', 'N/A'
             # Everything is under the <a> with `day_id`
             a_tag = soup.find('a', id=day_id)

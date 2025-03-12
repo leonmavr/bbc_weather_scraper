@@ -121,3 +121,5 @@ def fmt_day_hourly(days_from_now=0) -> str:
         for report in weather_data[target_date]:
             ret += fmt_weather_data(report, temp_min, temp_max) + '\n'
     return ret
+
+print(fmt_day_hourly())
