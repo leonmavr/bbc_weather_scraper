@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import wcwidth
+from pynput import keyboard
 
 from collections import namedtuple
 import sys
@@ -10,6 +11,9 @@ import os
 from datetime import datetime, timedelta
 import requests
 from typing import List
+import threading
+import time
+import sys
 
 # select which weather card is highlighted
 icard=0
@@ -91,6 +95,7 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
             )
         return card
 
+    os.system("cls" if os.name == "nt" else "clear")  # Clear screen
     rows = []
     for i in range(0, len(weather_data), cards_per_row):
         row = weather_data[i:i + cards_per_row]
@@ -201,10 +206,32 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
     raise KeyError(f"ERROR: No such city '{city_name}' in file {file_path}.\n"
         "Please look up the city name on bbc.com/weather and update your .dat file.")
 
+def on_press(key):
+    global icard
+    try:
+        if key.char == 'a':  # previous day 
+            icard = (icard - 1) % 13
+        elif key.char == 'd':  # next day 
+            icard = (icard + 1) % 13
+        elif key.char == 's':
+            # TODO: cards per row
+            icard = (icard + 4) % 13 # next week
+        elif key.char == 'w':
+            # TODO: cards per row
+            icard = (icard - 4) % 13 # previous week
+    except AttributeError:
+        pass
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         raise ValueError("Usage: python <this_script.py> <your_city_name>")
+    listener = keyboard.Listener(on_press=on_press)
+    listener_thread = threading.Thread(target=listener.start, daemon=True)
+    listener_thread.start()
+
     city_name = " ".join(sys.argv[1:])
-    print(city_name)
+    print(get_city_id(city_name))
     data = scrape(f"https://www.bbc.com/weather/{get_city_id(city_name)}")
-    print_weather_cards(data)
+    while True:
+        print_weather_cards(data)
+        time.sleep(0.25)
