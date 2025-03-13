@@ -22,6 +22,7 @@ icard=0
 print_hourly = False
 city_id = ''
 running = True
+city_name = ''
 
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
@@ -46,6 +47,16 @@ def get_weather_emoji(description: str) -> str:
     elif re.search(r'\bsun\w*\b|\bclear\b', description):
         return '☀'
     return "?"
+
+def id2city(city_id: str) -> str:
+    with open('city_ids.dat') as f:
+        lines = f.readlines()
+        for l in lines:
+            if l.split(':')[-1].strip() == str(city_id):
+                city_name = l.split(':')[0].strip()
+                return city_name
+    return 'N/A'
+    
 
 def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
     """
@@ -107,6 +118,11 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         row = weather_data[i:i + cards_per_row]
         rows.append(row)
 
+    # print heading
+    if not print_hourly:
+        print(f" {city_name}")
+        print(f"\u2514{'\u2500' * (len(city_name))}\u2518")
+    # print weather cards
     for irow, row in enumerate(rows):
         card_lines = [create_card(weather, irow*cards_per_row + icol).splitlines() for icol ,weather in enumerate(row)]
         for line_idx in range(len(card_lines[0])):
@@ -249,6 +265,7 @@ if __name__ == '__main__':
 
     city_name = " ".join(sys.argv[1:])
     city_id = get_city_id(city_name)
+    city_name = id2city(city_id)
     data = scrape(f"https://www.bbc.com/weather/{city_id}")
     while running:
         print_weather_cards(data)
