@@ -20,6 +20,7 @@ import sys
 icard=0
 # whether to print the daily or hourly report
 print_hourly = False
+city_id = ''
 
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
@@ -45,7 +46,7 @@ def get_weather_emoji(description: str) -> str:
         return '☀'
     return "?"
 
-def print_weather_cards(weather_data, city_id, card_width=30, cards_per_row=4):
+def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
     """
     Print weather data as cards with box-drawing characters.
     ChatGPT wrote some of this function so fingers crossed everything works!
@@ -230,7 +231,7 @@ def on_press(key):
             print_hourly = not print_hourly
             if print_hourly:
                 os.system("cls" if os.name == "nt" else "clear")
-                print(fmt_day_hourly())
+                print(fmt_day_hourly(city_id, days_from_now=icard))
     except AttributeError:
         pass
 
@@ -242,8 +243,8 @@ if __name__ == '__main__':
     listener_thread.start()
 
     city_name = " ".join(sys.argv[1:])
-    #print(get_city_id(city_name))
-    data = scrape(f"https://www.bbc.com/weather/{get_city_id(city_name)}")
+    city_id = get_city_id(city_name)
+    data = scrape(f"https://www.bbc.com/weather/{city_id}")
     while True:
-        print_weather_cards(data, get_city_id(city_name))
+        print_weather_cards(data)
         time.sleep(0.25)

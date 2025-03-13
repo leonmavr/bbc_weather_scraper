@@ -55,7 +55,8 @@ def request_weather(url) -> Dict:
         return None
 
 
-def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/2925533') -> WeatherReport:
+def request_hourly(city_id) -> WeatherReport:
+    url = id2irl(city_id)
     data = request_weather(url)
     if not data:
         return defaultdict(list)
@@ -113,8 +114,8 @@ def fmt_weather_data(data, from_, to_) -> str:
     return ret
 
 
-def fmt_day_hourly(city_id='TODO', days_from_now=0) -> str:
-    weather_data = request_hourly()
+def fmt_day_hourly(city_id, days_from_now=0) -> str:
+    weather_data = request_hourly(city_id)
     target_date = (datetime.now() + timedelta(days=days_from_now)).strftime('%Y-%m-%d')
     ret = ''
 
