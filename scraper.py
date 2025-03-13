@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import wcwidth
 from pynput import keyboard
+from hourly import fmt_day_hourly
 
 from collections import namedtuple
 import sys
@@ -17,6 +18,8 @@ import sys
 
 # select which weather card is highlighted
 icard=0
+# whether to print the daily or hourly report
+print_hourly = False
 
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
@@ -42,10 +45,10 @@ def get_weather_emoji(description: str) -> str:
         return '☀'
     return "?"
 
-def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
+def print_weather_cards(weather_data, city_id, card_width=30, cards_per_row=4):
     """
     Print weather data as cards with box-drawing characters.
-    ChatGPT wrote this function so fingers crossed everything works!
+    ChatGPT wrote some of this function so fingers crossed everything works!
     """
     def pad_string(s, target_width):
         """Pad the string to the target display width."""
@@ -95,7 +98,8 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
             )
         return card
 
-    os.system("cls" if os.name == "nt" else "clear")  # Clear screen
+    if not print_hourly:
+        os.system("cls" if os.name == "nt" else "clear")  # Clear screen
     rows = []
     for i in range(0, len(weather_data), cards_per_row):
         row = weather_data[i:i + cards_per_row]
@@ -104,8 +108,10 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
     for irow, row in enumerate(rows):
         card_lines = [create_card(weather, irow*cards_per_row + icol).splitlines() for icol ,weather in enumerate(row)]
         for line_idx in range(len(card_lines[0])):
-            print(" ".join(card[line_idx] for card in card_lines))
-        print()  # Add spacing between rows
+            if not print_hourly:
+                print(" ".join(card[line_idx] for card in card_lines))
+        if not print_hourly:
+            print()  # Add spacing between rows
 
 def is_file_outdated(file_path, max_age_hours=3) -> bool:
     if os.path.exists(file_path):
@@ -208,17 +214,23 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
 
 def on_press(key):
     global icard
+    global print_hourly
     try:
         if key.char == 'a':  # previous day 
             icard = (icard - 1) % 13
         elif key.char == 'd':  # next day 
             icard = (icard + 1) % 13
         elif key.char == 's':
-            # TODO: cards per row
+            # TODO: cards per row instead of 4
             icard = (icard + 4) % 13 # next week
         elif key.char == 'w':
-            # TODO: cards per row
+            # TODO: cards per row instead of 4
             icard = (icard - 4) % 13 # previous week
+        elif key.char == 'f':
+            print_hourly = not print_hourly
+            if print_hourly:
+                os.system("cls" if os.name == "nt" else "clear")
+                print(fmt_day_hourly())
     except AttributeError:
         pass
 
@@ -230,8 +242,8 @@ if __name__ == '__main__':
     listener_thread.start()
 
     city_name = " ".join(sys.argv[1:])
-    print(get_city_id(city_name))
+    #print(get_city_id(city_name))
     data = scrape(f"https://www.bbc.com/weather/{get_city_id(city_name)}")
     while True:
-        print_weather_cards(data)
+        print_weather_cards(data, get_city_id(city_name))
         time.sleep(0.25)

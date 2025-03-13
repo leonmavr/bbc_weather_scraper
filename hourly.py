@@ -19,25 +19,35 @@ WeatherReport = namedtuple(
     ]
 )
 
-CACHE_FILE = "/tmp/weather_hourly_2925533.json"
+#CACHE_FILE = ''
 CACHE_TTL_SEC = 3600
 
+def url2file(url) -> str:
+    city_id = url.split('/')[-1]
+    return os.path.join(os.sep, 'tmp', f"weather_hourly_{city_id}")
+
+def id2irl(city_id) -> str:
+    return f"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/{city_id}" 
 
 def request_weather(url) -> Dict:
     '''
     Requests data from BBC's API. If already requested up to `CACHE_TTL_SEC` ago,
     read from a cached file.
     '''
-    if os.path.exists(CACHE_FILE):
-        file_age = time.time() - os.path.getmtime(CACHE_FILE)
+    # TODO: url to ID to file
+    cache_file = url2file(url)
+    # if already cached read from it
+    if os.path.exists(cache_file):
+        file_age = time.time() - os.path.getmtime(cache_file)
         if file_age < CACHE_TTL_SEC:
-            with open(CACHE_FILE, 'r') as f:
+            with open(cache_file, 'r') as f:
                 return json.load(f)
+    # else cache it
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        with open(CACHE_FILE, 'w') as f:
+        with open(cache_file, 'w') as f:
             json.dump(data, f)
         return data
     else:
@@ -49,7 +59,6 @@ def request_hourly(url='https://weather-broker-cdn.api.bbci.co.uk/en/forecast/ag
     data = request_weather(url)
     if not data:
         return defaultdict(list)
-
     forecasts = data.get("forecasts", [])
     weather_data = defaultdict(list)
 
@@ -104,7 +113,7 @@ def fmt_weather_data(data, from_, to_) -> str:
     return ret
 
 
-def fmt_day_hourly(days_from_now=0) -> str:
+def fmt_day_hourly(city_id='TODO', days_from_now=0) -> str:
     weather_data = request_hourly()
     target_date = (datetime.now() + timedelta(days=days_from_now)).strftime('%Y-%m-%d')
     ret = ''
@@ -121,5 +130,3 @@ def fmt_day_hourly(days_from_now=0) -> str:
         for report in weather_data[target_date]:
             ret += fmt_weather_data(report, temp_min, temp_max) + '\n'
     return ret
-
-print(fmt_day_hourly())
