@@ -21,6 +21,7 @@ icard=0
 # whether to print the daily or hourly report
 print_hourly = False
 city_id = ''
+running = True
 
 def get_weather_emoji(description: str) -> str:
     description = description.lower()
@@ -114,13 +115,13 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         if not print_hourly:
             print()  # Add spacing between rows
 
-def is_file_outdated(file_path, max_age_hours=3) -> bool:
+def is_file_outdated(file_path, max_age_hours=2) -> bool:
     if os.path.exists(file_path):
         file_age = time.time() - os.path.getmtime(file_path)
         return file_age > max_age_hours * 3600
     return True
 
-def scrape(url='https://www.bbc.com/weather/2925533', use_emojis=True, verbose=False) -> List:
+def scrape(url, use_emojis=True, verbose=False) -> List:
     ### Make a GET request and capture response, or use a cached file
     # Encapsulate the data in each day
     Weather = namedtuple('Weather', ['descr', 'date', 'temp_low', 'temp_high'])
@@ -143,11 +144,12 @@ def scrape(url='https://www.bbc.com/weather/2925533', use_emojis=True, verbose=F
     soup = BeautifulSoup(html_content, 'html.parser')
     daily_data = []
     ndays = 14 # that's how much BBC typically forecasts for
-    for day in range(1,ndays):
+    # TODO: at night it should be (1, ndays) or we have a missing high temp
+    for day in range(0, ndays):
         day_id = f"daylink-{day}"
         extract_numbers = lambda x: [int(xx) for xx in re.findall(r'\d+', x)]
         try:
-            date = datetime.now() + timedelta(days=day-1)
+            date = datetime.now() + timedelta(days=day)
             descr, temp_low, temp_high = 'N/A', 'N/A', 'N/A'
             # Everything is under the <a> with `day_id`
             a_tag = soup.find('a', id=day_id)
@@ -216,6 +218,7 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
 def on_press(key):
     global icard
     global print_hourly
+    global running
     try:
         if key.char == 'a':  # previous day 
             icard = (icard - 1) % 13
@@ -227,11 +230,13 @@ def on_press(key):
         elif key.char == 'w':
             # TODO: cards per row instead of 4
             icard = (icard - 4) % 13 # previous week
-        elif key.char == 'f':
+        elif key.char == 'f' or key.char == 'x':
             print_hourly = not print_hourly
             if print_hourly:
                 os.system("cls" if os.name == "nt" else "clear")
-                print(fmt_day_hourly(city_id, days_from_now=icard+1))
+                print(fmt_day_hourly(city_id, days_from_now=icard))
+        elif key.char == 'q':
+            running = False
     except AttributeError:
         pass
 
@@ -245,6 +250,6 @@ if __name__ == '__main__':
     city_name = " ".join(sys.argv[1:])
     city_id = get_city_id(city_name)
     data = scrape(f"https://www.bbc.com/weather/{city_id}")
-    while True:
+    while running:
         print_weather_cards(data)
         time.sleep(0.25)
