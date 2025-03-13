@@ -120,7 +120,8 @@ def fmt_day_hourly(city_id, days_from_now=0) -> str:
     ret = ''
 
     if target_date in weather_data:
-        temp_min, temp_max = -30, 45
+        # change these if you live in a very cold/hot place
+        temp_min, temp_max = -40, 55
         for report in weather_data[target_date]:
             # grab the min and mxx temperature to adjust the steps in the bar
             if report.temperatureC > temp_min:

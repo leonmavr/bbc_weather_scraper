@@ -231,7 +231,7 @@ def on_press(key):
             print_hourly = not print_hourly
             if print_hourly:
                 os.system("cls" if os.name == "nt" else "clear")
-                print(fmt_day_hourly(city_id, days_from_now=icard))
+                print(fmt_day_hourly(city_id, days_from_now=icard+1))
     except AttributeError:
         pass
 
