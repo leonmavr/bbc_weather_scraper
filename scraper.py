@@ -15,6 +15,7 @@ from typing import List
 import threading
 import time
 import sys
+import tempfile
 
 # select which weather card is highlighted
 icard=0
@@ -87,11 +88,9 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
 
     def create_card(weather, icard_current):
         """Generate a single card as a string."""
-        #print(icard_current)
         description = weather.descr
-        #print(string_display_width(weather.description))
         temp_range = f"{weather.temp_low} to {weather.temp_high} °C".center(card_width - 2)
-        if icard_current != icard:
+        if icard_current != icard: # not highlighted
             card = (
                 f"\u250c{'\u2500' * (card_width - 2)}\u2510\n"  # Top border
                 f"\u2502{weather.date.center(card_width - 2)}\u2502\n"  # Date
@@ -143,7 +142,9 @@ def scrape(url, use_emojis=True, verbose=False) -> List:
     Weather = namedtuple('Weather', ['descr', 'date', 'temp_low', 'temp_high'])
     # Fetch or read HTML content
     location_id = url.split("/")[-1]  # Extract last part of the URL
-    output_file = f"/tmp/{location_id}.html"
+    html_file = f"{location_id}.html"
+    output_file = f"{os.path.join(tempfile.gettempdir(), html_file)}"
+    print(output_file)
     if is_file_outdated(output_file):
         response = requests.get(url)
         if response.status_code == 200:

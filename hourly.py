@@ -2,6 +2,7 @@ import requests
 import json
 import os
 import time
+import tempfile
 from collections import namedtuple, defaultdict
 from datetime import datetime, timedelta
 from typing import Dict
@@ -24,7 +25,8 @@ CACHE_TTL_SEC = 3600
 
 def url2file(url) -> str:
     city_id = url.split('/')[-1]
-    return os.path.join(os.sep, 'tmp', f"weather_hourly_{city_id}")
+    json_hourly = f"weather_hourly_{city_id}.json"
+    return f"{os.path.join(tempfile.gettempdir(), json_hourly)}"
 
 def id2irl(city_id) -> str:
     return f"https://weather-broker-cdn.api.bbci.co.uk/en/forecast/aggregated/{city_id}" 
@@ -34,7 +36,6 @@ def request_weather(url) -> Dict:
     Requests data from BBC's API. If already requested up to `CACHE_TTL_SEC` ago,
     read from a cached file.
     '''
-    # TODO: url to ID to file
     cache_file = url2file(url)
     # if already cached read from it
     if os.path.exists(cache_file):
