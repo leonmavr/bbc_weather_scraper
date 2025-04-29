@@ -62,6 +62,6 @@ for the hourly weather measures exactly that day.
 
 If you liked the project, feel free to buy me a coffe!
 
-<a href="https://kofi.com/leomav">
+<a href="https://ko-fi.com/leomav">
   <img src="https://raw.githubusercontent.com/leonmavr/bbc_weather_scraper/refs/heads/master/assets/kofi_logo.png" alt="" style="width:150px; height:auto;">
 </a>
