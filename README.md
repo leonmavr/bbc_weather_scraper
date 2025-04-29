@@ -56,12 +56,12 @@ for the hourly weather measures exactly that day.
 
 ## Demo
 
-
+<img src="https://github.com/leonmavr/bbc_weather_scraper/blob/master/assets/demo.gif" width="400"/>
 
 ## Donations
 
 If you liked the project, feel free to buy me a coffe!
 
-<a href="kofi.com/leomav">
+<a href="https://kofi.com/leomav">
   <img src="https://raw.githubusercontent.com/leonmavr/bbc_weather_scraper/refs/heads/master/assets/kofi_logo.png" alt="" style="width:150px; height:auto;">
 </a>
