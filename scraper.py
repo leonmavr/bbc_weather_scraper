@@ -1,7 +1,11 @@
+#!/usr/bin/env python3
+
+from hourly import fmt_day_hourly
+from closest_city import find_closest_city 
+
 from bs4 import BeautifulSoup
 import wcwidth
 from pynput import keyboard
-from hourly import fmt_day_hourly
 
 from collections import namedtuple
 import sys
@@ -128,7 +132,19 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
             if not print_hourly:
                 print(" ".join(card[line_idx] for card in card_lines))
         if not print_hourly:
-            print()  # Add spacing between rows
+            print()  # spacing between rows
+    if not print_hourly:
+        print(format_keys())
+
+def format_keys():
+    key_layout = (
+    f"\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\n"
+    f"\u2502 q \u2502\u2502 w \u2502\n"
+    f"\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\n"
+    f"\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 9}\u2510\n"
+    f"\u2502 a \u2502\u2502 s \u2502\u2502 d \u2502\u2502 f/x: go \u2502\n"
+    f"\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 9}\u2518")
+    return key_layout
 
 def is_file_outdated(file_path, max_age_hours=2) -> bool:
     if os.path.exists(file_path):
@@ -144,7 +160,6 @@ def scrape(url, use_emojis=True, verbose=False) -> List:
     location_id = url.split("/")[-1]  # Extract last part of the URL
     html_file = f"{location_id}.html"
     output_file = f"{os.path.join(tempfile.gettempdir(), html_file)}"
-    print(output_file)
     if is_file_outdated(output_file):
         response = requests.get(url)
         if response.status_code == 200:
@@ -258,16 +273,23 @@ def on_press(key):
         pass
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        raise ValueError("Usage: python <this_script.py> <your_city_name>")
+    if len(sys.argv) == 1:
+        cities = []
+        with open('city_ids.dat') as f:
+            for line in f.readlines():
+                cities.append(line.split(':')[0])
+        city_name = find_closest_city(cities)[0]
+    else:
+        if sys.argv[1] == '-h' or sys.argv[1] == '--help':
+            raise ValueError("Usage: python <this_script.py> <your_city_name>")
+        city_name = "".join(sys.argv[1:])
     listener = keyboard.Listener(on_press=on_press)
     listener_thread = threading.Thread(target=listener.start, daemon=True)
     listener_thread.start()
 
-    city_name = " ".join(sys.argv[1:])
     city_id = get_city_id(city_name)
     city_name = id2city(city_id)
     data = scrape(f"https://www.bbc.com/weather/{city_id}")
     while running:
         print_weather_cards(data)
-        time.sleep(0.25)
+        time.sleep(0.2)
