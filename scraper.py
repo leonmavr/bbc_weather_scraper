@@ -234,8 +234,8 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
     
     city_data = {}
     for line in lines:
-        # Handle entries with the format "City Name: ID: lat, lon" or "City Name: ID"
-        parts = line.strip().split(':', 2)  # Split by first two colons only
+        # entries have format "City Name: ID: lat, lon" or "City Name: ID"
+        parts = line.strip().split(':', 2)
         if len(parts) >= 2:
             city = parts[0].strip()
             city_id = int(parts[1].strip())  # This will handle ID even if coordinates follow
