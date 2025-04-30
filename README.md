@@ -7,6 +7,12 @@ Yes, the code is bad because I just wanted to quickly whip up something that wor
 
 ## Usage
 
+### Requirements
+
+```
+pip install -r requirements.txt
+```
+
 ### The script
 
 Some minimal changes are required to calibrate it for you location. If you don't live in one of the 
