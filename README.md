@@ -7,6 +7,8 @@ Yes, the code is bad because I just wanted to quickly whip up something that wor
 
 ## Usage
 
+### The script
+
 Some minimal changes are required to calibrate it for you location. If you don't live in one of the 
 existing cities at `city_ids.dat`, search your city at [BBC's page](bbc.com/weather) and append the name
 and city ID from the URL, e.g. `https://www.bbc.com/weather/3169070 -> ID 3169070`  in the file, such as:
@@ -31,6 +33,15 @@ python scraper London
 python scraper.py nw yrk # <- New York
 ```
 
+### City entries
+
+Cities are listen in file `city_ids.dat`. Each line contains an entry consisting of:
+
+```
+city name: BBC ID: latitude, longitude
+```
+Latitude and longitude are optional but save time - otherwise the script looks them up.
+
 ## Features
 
 - [x] 14-day forecast with terminal graphics and keyvoard controls
@@ -40,8 +51,8 @@ python scraper.py nw yrk # <- New York
 - [x] Fuzzy matching of input city
 - [x] Closest city to your input 
 - [x] Some predefined cities to find best match
+- [x] ~~Caching of city geolocations in `city_ids.dat`~~ -> Replaced by listing coordinates
 - [ ] Imperial units
-- [ ] Caching of city geolocations in `city_ids.dat` 
 - [ ] Automatically find each city's ID from BBC's API if possible
 
 Any pull requests to implement the missing features are welcome!
