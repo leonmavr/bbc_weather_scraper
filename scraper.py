@@ -57,7 +57,7 @@ def id2city(city_id: str) -> str:
     with open('city_ids.dat') as f:
         lines = f.readlines()
         for l in lines:
-            if l.split(':')[-1].strip() == str(city_id):
+            if l.split(':')[1].strip() == str(city_id):
                 city_name = l.split(':')[0].strip()
                 return city_name
     return 'N/A'
@@ -231,19 +231,23 @@ def get_city_id(city_name, file_path='city_ids.dat') -> int:
     """
     with open(file_path, 'r') as file:
         lines = file.readlines()
+    
     city_data = {}
     for line in lines:
-        match = re.match(r'(.+):\s*(\d+)', line.strip())
-        if match:
-            city, city_id = match.groups()
-            city_data[city.strip()] = int(city_id.strip())
+        # Handle entries with the format "City Name: ID: lat, lon" or "City Name: ID"
+        parts = line.strip().split(':', 2)  # Split by first two colons only
+        if len(parts) >= 2:
+            city = parts[0].strip()
+            city_id = int(parts[1].strip())  # This will handle ID even if coordinates follow
+            city_data[city] = city_id
+    
     city_names = list(city_data.keys())
     best_match = get_close_matches(city_name, city_names, n=1, cutoff=0.3)
     
     if best_match:
         matched_city = best_match[0]
-        city_id = city_data[matched_city]
-        return city_id
+        return city_data[matched_city]
+    
     raise KeyError(f"ERROR: No such city '{city_name}' in file {file_path}.\n"
         "Please look up the city name on bbc.com/weather and update your .dat file.")
 

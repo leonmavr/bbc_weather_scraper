@@ -13,7 +13,14 @@ def get_current_location() -> Tuple[int, int]:
     except Exception as e:
         return None
 
-def get_city_coordinates(city_name):
+def get_city_coordinates(city_name, city_ids_file='city_ids.dat'):
+    # try fetching coordinates from file (offline)
+    with open(city_ids_file) as f:
+        for line in f.readlines():
+            if city_name.lower() == line.split(':')[0].lower():
+                return float(line.split(':')[2].split(',')[0]),\
+                       float(line.split(':')[2].split(',')[1])
+    # else look them up
     geolocator = Nominatim(user_agent="city_locator")
     location = geolocator.geocode(city_name)
     if location:
