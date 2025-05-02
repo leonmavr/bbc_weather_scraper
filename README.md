@@ -9,6 +9,8 @@ Yes, the code is bad because I just wanted to quickly whip up something that wor
 
 ### Requirements
 
+First, install all necessary packages:
+
 ```
 pip install -r requirements.txt
 ```
@@ -16,37 +18,32 @@ pip install -r requirements.txt
 ### The script
 
 Some minimal changes are required to calibrate it for you location. If you don't live in one of the 
-existing cities at `city_ids.dat`, search your city at [BBC's page](bbc.com/weather) and append the name
+existing cities in file `city_ids.dat`, search your city at [BBC's page](bbc.com/weather) and append the name
 and city ID from the URL, e.g. `https://www.bbc.com/weather/3169070 -> ID 3169070`  in the file, such as:
 
 ```
 Rome: 3169070
 ```
 
-If you run `scraper.py` without arguments, it will autodetect your location and geneerate the forecast of
-closest city in `city_ids.dat`:
+You can optionally append the city's latitude and longitude (to make the lookup faster) in a third colon-separated field as:
+
+```
+Rome: 3169070: 41.8967, 12.4822
+```
+
+If you run `scraper.py` without arguments, it will autodetect your location and generate the forecast of
+the closest city in `city_ids.dat`:
 
 ```bash
 python scraper.py # <- auto detect city
 ```
-
-This will take a few seconds to query the location of each city in `city_ids.dat` against the location 
-of your city and return the closest one. You can also manually enter a city. This is faster as is skip 
-quering geolocations and uses fuzzy matches so spelling mistakes are tolerated, e.g.:
+If you run it with an argument, it will apply fuzzing matching to find the best match of your entered city in
+`city_ids.dat`:
 
 ```bash
 python scraper London
 python scraper.py nw yrk # <- New York
 ```
-
-### City entries
-
-Cities are listen in file `city_ids.dat`. Each line contains an entry consisting of:
-
-```
-city name: BBC ID: latitude, longitude
-```
-Latitude and longitude are optional but save time - otherwise the script looks them up.
 
 ## Features
 
@@ -73,11 +70,9 @@ for the hourly weather measures exactly that day.
 
 ## Demo
 
-<img src="https://github.com/leonmavr/bbc_weather_scraper/blob/master/assets/demo.gif" width="400"/>
+<img src="https://github.com/leonmavr/bbc_weather_scraper/blob/master/assets/demo.gif" width="450"/>
 
 ## Donations
-
-If you liked the project, feel free to buy me a coffe!
 
 <a href="https://ko-fi.com/leomav">
   <img src="https://raw.githubusercontent.com/leonmavr/bbc_weather_scraper/refs/heads/master/assets/kofi_logo.png" alt="" style="width:300px; height:auto;">
