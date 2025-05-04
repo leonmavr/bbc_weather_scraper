@@ -96,21 +96,21 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         temp_range = f"{weather.temp_low} to {weather.temp_high} °C".center(card_width - 2)
         if icard_current != icard: # not highlighted
             card = (
-                f"\u250c{'\u2500' * (card_width - 2)}\u2510\n"  # Top border
-                f"\u2502{weather.date.center(card_width - 2)}\u2502\n"  # Date
-                f"\u2502{description[:card_width-4].center(card_width - 2)}\u2502\n"  # Description
-                f"\u2502{description[card_width-4:].center(card_width - 2)}\u2502\n"  # Description
-                f"\u2502{temp_range}\u2502\n"  # Temp range
-                f"\u2514{'\u2500' * (card_width - 2)}\u2518"  # Bottom border
+                f"┌{'─' * (card_width - 2)}┐\n"  # Top border
+                f"│{weather.date.center(card_width - 2)}│\n"  # Date
+                f"│{description[:card_width-4].center(card_width - 2)}│\n"  # Description
+                f"│{description[card_width-4:].center(card_width - 2)}│\n"  # Description
+                f"│{temp_range}│\n"  # Temp range
+                f"└{'─' * (card_width - 2)}┘"  # Bottom border
             )
         else:
             card = (
-                f"\u259B{'\u2580' * (card_width - 2)}\u259C\n"  # Top border
-                f"\u258C{weather.date.center(card_width - 2)}\u2590\n"  # Date
-                f"\u258C{description[:card_width-4].center(card_width - 2)}\u2590\n"  # Description
-                f"\u258C{description[card_width-4:].center(card_width - 2)}\u2590\n"  # Description
-                f"\u258C{temp_range}\u2590\n"  # Temp range
-                f"\u2599{'\u2584'   * (card_width - 2)}\u259F"  # Bottom border
+                f"▛{'▀' * (card_width - 2)}▜\n"  # Top border
+                f"▌{weather.date.center(card_width - 2)}▐\n"  # Date
+                f"▌{description[:card_width-4].center(card_width - 2)}▐\n"  # Description
+                f"▌{description[card_width-4:].center(card_width - 2)}▐\n"  # Description
+                f"▌{temp_range}▐\n"  # Temp range
+                f"▙{'▄' * (card_width - 2)}▟"  # Bottom border
             )
         return card
 
@@ -124,7 +124,7 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
     # print heading
     if not print_hourly:
         print(f" {city_name}")
-        print(f"\u2514{'\u2500' * (len(city_name))}\u2518")
+        print(f"└{'─' * (len(city_name))}┘")
     # print weather cards
     for irow, row in enumerate(rows):
         card_lines = [create_card(weather, irow*cards_per_row + icol).splitlines() for icol ,weather in enumerate(row)]
@@ -137,13 +137,21 @@ def print_weather_cards(weather_data, card_width=30, cards_per_row=4):
         print(format_keys())
 
 def format_keys():
+    top_left = "┌"
+    top_right = "┐"
+    bottom_left = "└"
+    bottom_right = "┘"
+    horizontal = "─"
+    vertical = "│"
+    # avoids directly using escape sequences for Windows compatibility
     key_layout = (
-    f"\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\n"
-    f"\u2502 q \u2502\u2502 w \u2502\n"
-    f"\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\n"
-    f"\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 3}\u2510\u250c{'\u2500' * 9}\u2510\n"
-    f"\u2502 a \u2502\u2502 s \u2502\u2502 d \u2502\u2502 f/x: go \u2502\n"
-    f"\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 3}\u2518\u2514{'\u2500' * 9}\u2518")
+        f"{top_left}{horizontal * 3}{top_right}{top_left}{horizontal * 3}{top_right}\n"
+        f"{vertical} q {vertical}{vertical} w {vertical}\n"
+        f"{bottom_left}{horizontal * 3}{bottom_right}{bottom_left}{horizontal * 3}{bottom_right}\n"
+        f"{top_left}{horizontal * 3}{top_right}{top_left}{horizontal * 3}{top_right}{top_left}{horizontal * 3}{top_right}{top_left}{horizontal * 9}{top_right}\n"
+        f"{vertical} a {vertical}{vertical} s {vertical}{vertical} d {vertical}{vertical} f/x: go {vertical}\n"
+        f"{bottom_left}{horizontal * 3}{bottom_right}{bottom_left}{horizontal * 3}{bottom_right}{bottom_left}{horizontal * 3}{bottom_right}{bottom_left}{horizontal * 9}{bottom_right}"
+    )
     return key_layout
 
 def is_file_outdated(file_path, max_age_hours=2) -> bool:
